@@ -83,37 +83,55 @@ class RemoteUIServer {
     }
 }
 
-static string? root_device_xml = null;
-static string? service_directory = null;
+static string? config_file = null;
 static bool debug = false;
 
 static const OptionEntry[] options = {
-    { "root-device-xml", 0, 0, OptionArg.FILENAME, ref root_device_xml,
-        "The root device XML file.", "[file]" },
-    { "service-directory", 0, 0, OptionArg.FILENAME, ref service_directory,
-        "The directory with service XML files.", "[file]" },
+    { "config-file", 'c', 0, OptionArg.FILENAME, ref config_file,
+        "The server config file. See config/config.json for an example.",
+        "[file]" },
     { "debug", 'd', 0, OptionArg.NONE, ref debug,
         "Print debug messages to the console", null },
     { null }
 };
 
 static int main(string[] args) {
+    string? root_device_xml;
+    string? service_directory;
     try {
         var opt_context = new OptionContext("UPnP RemoteUIServer");
         opt_context.set_help_enabled (true);
         opt_context.add_main_entries (options, null);
         opt_context.parse (ref args);
-        if (root_device_xml == null) {
-            throw new OptionError.BAD_VALUE("Missing --root-device-xml");
-        }
-        if (service_directory == null) {
-            throw new OptionError.BAD_VALUE("Missing --service-directory");
+        if (config_file == null) {
+            throw new OptionError.BAD_VALUE("Missing --config-file");
         }
     } catch (OptionError e) {
         stderr.printf ("%s\n", e.message);
         stderr.printf ("Run '%s --help' to see a full list of available command line options.\n",
             args[0]);
         return 2;
+    }
+    try {
+        var parser = new Json.Parser();
+        parser.load_from_file(config_file);
+
+        var root = parser.get_root();
+        var object = root.get_object();
+        root_device_xml = object.get_string_member("root-device-xml");
+        if (root_device_xml == null) {
+            throw new RUIError.BAD_CONFIG("Missing \"root-device-xml\"");
+        }
+        service_directory = object.get_string_member("service-directory");
+        if (service_directory == null) {
+            throw new RUIError.BAD_CONFIG("Missing \"service-directory\"");
+        }
+        if (!Path.is_absolute(service_directory)) {
+            service_directory = Path.build_filename(Path.get_dirname(config_file), service_directory);
+        }
+    } catch (Error e) {
+        stderr.printf("Error reading config file %s.\n", config_file);
+        return 3;
     }
     try {
         RemoteUIServer server = new RemoteUIServer(root_device_xml,

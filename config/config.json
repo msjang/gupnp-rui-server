@@ -1,0 +1,4 @@
+{
+    "root-device-xml": "RemoteUIServerDevice1.xml",
+    "service-directory": "."
+}

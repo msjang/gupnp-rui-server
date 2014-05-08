@@ -27,7 +27,6 @@ While developing, it can be useful to leave `tup` running in the background, aut
 
 ## Run
 
-    ./server --root-device-xml RemoteUIServerDevice1.xml \
-        --service-directory src
+    ./server -c config/config.json
 
 You should now be able to discover the server with your client.
