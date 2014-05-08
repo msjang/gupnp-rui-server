@@ -6,8 +6,18 @@
         "name": "CableLabs Remote UI Discovery Server",
         "url": "http://10.43.0.93:8080"
     }, {
+        "id": "252703FB-A447-4659-B4CD-E15BC57B7B43",
+        "name": "CableLabs HTTP Discovery Server (GitHub)",
+        "url": "https://github.com/cablelabs/rui-http-server",
+        "icons": [{
+            "url": "https://github.global.ssl.fastly.net/images/modules/logos_page/GitHub-Mark.png"
+        }]
+    }, {
         "id": "64D5C5A0-8CB1-476F-976D-9038C27A7EFE",
-        "name": "Brendan Test",
-        "url": "https://www.brendanlong.com"
+        "name": "CableLabs RemoteUI Server Service (GitHub)",
+        "url": "https://github.com/cablelabs/gupnp-rui-server",
+        "icons": [{
+            "url": "https://github.global.ssl.fastly.net/images/modules/logos_page/GitHub-Mark.png"
+        }]
     }]
 }

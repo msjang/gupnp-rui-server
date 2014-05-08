@@ -3,17 +3,19 @@ errordomain RUIError {
 }
 
 struct RemoteUI {
-    public RemoteUI(string id, string name, string? description, string url)
-    {
+    public RemoteUI(string id, string name, string? description, string url,
+            string[]? icons) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.url = url;
+        this.icons = icons;
     }
     string id;
     string name;
     string? description;
     string url;
+    string[]? icons;
 }
 
 class RemoteUIServer {
@@ -70,6 +72,15 @@ class RemoteUIServer {
                 builder.append("<description>");
                 builder.append(ui.description);
                 builder.append("</description>");
+            }
+            if (ui.icons != null && ui.icons.length > 0) {
+                builder.append("<iconList>");
+                foreach (string url in ui.icons) {
+                    builder.append("<icon><url>");
+                    builder.append(url);
+                    builder.append("</url></icon>");
+                }
+                builder.append("</iconList>");
             }
             builder.append("<protocol shortName=\"DLNA-HTML5-1.0\"><uri>");
             builder.append(ui.url);
@@ -160,7 +171,25 @@ static int main(string[] args) {
             if (ui_node.has_member("description")) {
                 description = ui_node.get_string_member("description");
             }
-            remoteUIs += RemoteUI(id, name, description, url);
+            string[]? icons = null;
+            if (ui_node.has_member("icons")) {
+                icons = {};
+                Json.Array icons_node = ui_node.get_array_member("icons");
+                for (var j = 0; j < icons_node.get_length(); ++j) {
+                    Json.Object icon_node = icons_node.get_element(j).get_object();
+                    if (!icon_node.has_member("url")) {
+                        stderr.printf("Ignoring icon with missing require attribute \"url\" for UI %s.\n", name);
+                        continue;
+                    }
+                    icons += icon_node.get_string_member("url");
+                }
+                if (icons.length == 0) {
+                    stderr.printf("Ignoring invalid 0-length icons list for UI %s.\n",
+                        name);
+                    icons = null;
+                }
+            }
+            remoteUIs += RemoteUI(id, name, description, url, icons);
         }
     } catch (Error e) {
         stderr.printf("Error reading config file %s.\n", config_file);
