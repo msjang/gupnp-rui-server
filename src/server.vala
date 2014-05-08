@@ -2,6 +2,20 @@ errordomain RUIError {
     BAD_CONFIG
 }
 
+struct RemoteUI {
+    public RemoteUI(string id, string name, string? description, string url)
+    {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.url = url;
+    }
+    string id;
+    string name;
+    string? description;
+    string url;
+}
+
 class RemoteUIServer {
     static const string REMOTE_UI_SERVICE_TYPE = "urn:schemas-upnp-org:service:RemoteUIServer:1";
 
@@ -11,6 +25,10 @@ class RemoteUIServer {
     GUPnP.Context context;
     GUPnP.RootDevice root_device;
     
+    static RemoteUI[] remoteUIs = {
+        RemoteUI("767cc58a-47d2-4fb3-b27e-f6c0d54f26b6", "CableLabs Remote UI Discovery Server", null, "http://10.43.0.93:8080")
+    };
+
     public RemoteUIServer(string root_device_xml, string service_directory) {
         this.root_device_xml = root_device_xml;
         this.service_directory = service_directory;
@@ -35,7 +53,27 @@ class RemoteUIServer {
     }
     
     void on_get_compatible_uis(GUPnP.ServiceAction action) {
-        action.set_value("UIListing", "<uilist></uilist>");
+        StringBuilder builder = new StringBuilder("<uilist>");
+        foreach (RemoteUI ui in remoteUIs) {
+            builder.append("<ui>");
+            builder.append("<uiID>");
+            builder.append(ui.id);
+            builder.append("</uiID>");
+            builder.append("<name>");
+            builder.append(ui.name);
+            builder.append("</name>");
+            if (ui.description != null) {
+                builder.append("<description>");
+                builder.append(ui.description);
+                builder.append("</description>");
+            }
+            builder.append("<protocol shortName=\"DLNA-HTML5-1.0\"><uri>");
+            builder.append(ui.url);
+            builder.append("</uri></protocol>");
+            builder.append("</ui>");
+        }
+        builder.append("</uilist>");
+        action.set_value("UIListing", builder.str);
         action.return();
     }
 }
