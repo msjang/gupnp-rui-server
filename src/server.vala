@@ -24,14 +24,13 @@ class RemoteUIServer {
 
     GUPnP.Context context;
     GUPnP.RootDevice root_device;
-    
-    static RemoteUI[] remoteUIs = {
-        RemoteUI("767cc58a-47d2-4fb3-b27e-f6c0d54f26b6", "CableLabs Remote UI Discovery Server", null, "http://10.43.0.93:8080")
-    };
+    RemoteUI[] remoteUIs;
 
-    public RemoteUIServer(string root_device_xml, string service_directory) {
+    public RemoteUIServer(string root_device_xml, string service_directory,
+        RemoteUI[] remoteUIs) {
         this.root_device_xml = root_device_xml;
         this.service_directory = service_directory;
+        this.remoteUIs = remoteUIs;
     }
 
     public void start() throws Error {
@@ -98,6 +97,7 @@ static const OptionEntry[] options = {
 static int main(string[] args) {
     string? root_device_xml;
     string? service_directory;
+    RemoteUI[] remoteUIs = {};
     try {
         var opt_context = new OptionContext("UPnP RemoteUIServer");
         opt_context.set_help_enabled (true);
@@ -118,6 +118,10 @@ static int main(string[] args) {
 
         var root = parser.get_root();
         var object = root.get_object();
+        if (object == null) {
+            stderr.printf("Config file has no root object.\n");
+            return 4;
+        }
         root_device_xml = object.get_string_member("root-device-xml");
         if (root_device_xml == null) {
             throw new RUIError.BAD_CONFIG("Missing \"root-device-xml\"");
@@ -129,13 +133,42 @@ static int main(string[] args) {
         if (!Path.is_absolute(service_directory)) {
             service_directory = Path.build_filename(Path.get_dirname(config_file), service_directory);
         }
+        var uis = object.get_array_member("uis");
+        for (var i = 0; i < uis.get_length(); ++i) {
+            var ui_node = uis.get_element(i).get_object();
+            if (ui_node == null) {
+                stderr.printf("Ignoring non-object member of uis array.\n");
+                continue;
+            }
+            string[] required_members = {"id", "name", "url"};
+            var missing_required = false;
+            foreach (string member in required_members) {
+                if (!ui_node.has_member(member)) {
+                    stderr.printf("Ignoring UI with missing required attribute \"%s\".\n",
+                        member);
+                    missing_required = true;
+                    break;
+                }
+            }
+            if (missing_required) {
+                continue;
+            }
+            var id = ui_node.get_string_member("id");
+            var name = ui_node.get_string_member("name");
+            var url = ui_node.get_string_member("url");
+            string? description = null;
+            if (ui_node.has_member("description")) {
+                description = ui_node.get_string_member("description");
+            }
+            remoteUIs += RemoteUI(id, name, description, url);
+        }
     } catch (Error e) {
         stderr.printf("Error reading config file %s.\n", config_file);
         return 3;
     }
     try {
         RemoteUIServer server = new RemoteUIServer(root_device_xml,
-            service_directory);
+            service_directory, remoteUIs);
         server.start();
         return 0;
     } catch (Error e) {

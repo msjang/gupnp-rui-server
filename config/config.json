@@ -1,4 +1,13 @@
 {
     "root-device-xml": "RemoteUIServerDevice1.xml",
-    "service-directory": "."
+    "service-directory": ".",
+    "uis": [{
+        "id": "767cc58a-47d2-4fb3-b27e-f6c0d54f26b6",
+        "name": "CableLabs Remote UI Discovery Server",
+        "url": "http://10.43.0.93:8080"
+    }, {
+        "id": "64D5C5A0-8CB1-476F-976D-9038C27A7EFE",
+        "name": "Brendan Test",
+        "url": "https://www.brendanlong.com"
+    }]
 }
