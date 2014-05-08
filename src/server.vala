@@ -49,7 +49,12 @@ class RemoteUIServer {
         service.action_invoked["GetCompatibleUIs"].connect(on_get_compatible_uis);
         
         MainLoop loop = new MainLoop();
+        Unix.signal_add(Posix.SIGINT, () => {
+            loop.quit();
+            return true;
+        });
         loop.run();
+        root_device.set_available(false);
     }
     
     void on_get_compatible_uis(GUPnP.ServiceAction action) {
