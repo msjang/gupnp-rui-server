@@ -2,9 +2,15 @@ errordomain RUIError {
     BAD_CONFIG
 }
 
+struct Icon {
+    uint64? width;
+    uint64? height;
+    string url;
+}
+
 struct RemoteUI {
     public RemoteUI(string id, string name, string? description, string url,
-            string[]? icons) {
+            Icon[]? icons) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -15,7 +21,42 @@ struct RemoteUI {
     string name;
     string? description;
     string url;
-    string[]? icons;
+    Icon[]? icons;
+}
+
+class XMLBuilder {
+    StringBuilder builder;
+
+    public XMLBuilder() {
+        builder = new StringBuilder();
+    }
+
+    public void open_tag(string tag, string? attributes = null) {
+        builder.append_c('<');
+        builder.append(tag);
+        if (attributes != null) {
+            builder.append_c(' ');
+            builder.append(attributes);
+        }
+        builder.append_c('>');
+    }
+
+    public void close_tag(string tag) {
+        builder.append("</");
+        builder.append(tag);
+        builder.append_c('>');
+    }
+
+    public void append_node(string tag, string content,
+            string? attributes = null) {
+        open_tag(tag);
+        builder.append(content);
+        close_tag(tag);
+    }
+
+    public string to_string() {
+        return builder.str;
+    }
 }
 
 class RemoteUIServer {
@@ -59,36 +100,37 @@ class RemoteUIServer {
     }
     
     void on_get_compatible_uis(GUPnP.ServiceAction action) {
-        StringBuilder builder = new StringBuilder("<uilist>");
+        XMLBuilder builder = new XMLBuilder();
+        builder.open_tag("uilist");
         foreach (RemoteUI ui in remoteUIs) {
-            builder.append("<ui>");
-            builder.append("<uiID>");
-            builder.append(ui.id);
-            builder.append("</uiID>");
-            builder.append("<name>");
-            builder.append(ui.name);
-            builder.append("</name>");
+            builder.open_tag("ui");
+            builder.append_node("uiID", ui.id);
+            builder.append_node("name", ui.name);
             if (ui.description != null) {
-                builder.append("<description>");
-                builder.append(ui.description);
-                builder.append("</description>");
+                builder.append_node("description", ui.description);
             }
             if (ui.icons != null && ui.icons.length > 0) {
-                builder.append("<iconList>");
-                foreach (string url in ui.icons) {
-                    builder.append("<icon><url>");
-                    builder.append(url);
-                    builder.append("</url></icon>");
+                builder.open_tag("iconList");
+                foreach (Icon icon in ui.icons) {
+                    builder.open_tag("icon");
+                    builder.append_node("url", icon.url);
+                    if (icon.width != null) {
+                        builder.append_node("width", icon.width.to_string());
+                    }
+                    if (icon.height != null) {
+                        builder.append_node("height", icon.height.to_string());
+                    }
+                    builder.close_tag("icon");
                 }
-                builder.append("</iconList>");
+                builder.close_tag("iconList");
             }
-            builder.append("<protocol shortName=\"DLNA-HTML5-1.0\"><uri>");
-            builder.append(ui.url);
-            builder.append("</uri></protocol>");
-            builder.append("</ui>");
+            builder.open_tag("protocol", "shortName=\"DLNA-HTML5-1.0\"");
+            builder.append_node("uri", ui.url);
+            builder.close_tag("protocol");
+            builder.close_tag("ui");
         }
-        builder.append("</uilist>");
-        action.set_value("UIListing", builder.str);
+        builder.close_tag("uilist");
+        action.set_value("UIListing", builder.to_string());
         action.return();
     }
 }
@@ -171,7 +213,7 @@ static int main(string[] args) {
             if (ui_node.has_member("description")) {
                 description = ui_node.get_string_member("description");
             }
-            string[]? icons = null;
+            Icon[]? icons = null;
             if (ui_node.has_member("icons")) {
                 icons = {};
                 Json.Array icons_node = ui_node.get_array_member("icons");
@@ -181,7 +223,27 @@ static int main(string[] args) {
                         stderr.printf("Ignoring icon with missing require attribute \"url\" for UI %s.\n", name);
                         continue;
                     }
-                    icons += icon_node.get_string_member("url");
+                    Icon icon = {};
+                    icon.url = icon_node.get_string_member("url");
+                    if (icon_node.has_member("width")) {
+                        var width = icon_node.get_int_member("width");
+                        if (width > 0) {
+                            icon.width = width;
+                        } else {
+                            stderr.printf("Ignoring invalid width %" + int64.FORMAT + " for URL %s.\n",
+                                width, icon.url);
+                        }
+                    }
+                    if (icon_node.has_member("height")) {
+                        var height = icon_node.get_int_member("height");
+                        if (height > 0) {
+                            icon.height = height;
+                        } else {
+                            stderr.printf("Ignoring invalid height %" + int64.FORMAT + " for URL %s.\n",
+                                height, icon.url);
+                        }
+                    }
+                    icons += icon;
                 }
                 if (icons.length == 0) {
                     stderr.printf("Ignoring invalid 0-length icons list for UI %s.\n",

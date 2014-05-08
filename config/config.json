@@ -17,7 +17,17 @@
         "name": "CableLabs RemoteUI Server Service (GitHub)",
         "url": "https://github.com/cablelabs/gupnp-rui-server",
         "icons": [{
-            "url": "https://github.global.ssl.fastly.net/images/modules/logos_page/GitHub-Mark.png"
+            "width": 120,
+            "height": 120,
+            "url": "images/GitHub-Mark-120px-plus.png"
+        }, {
+            "width": 64,
+            "height": 64,
+            "url": "images/GitHub-Mark-64px.png"
+        }, {
+            "width": 32,
+            "height": 32,
+            "url": "images/GitHub-Mark-32px.png"
         }]
     }]
 }
