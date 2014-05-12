@@ -3,8 +3,21 @@
     "service-directory": ".",
     "uis": [{
         "id": "767cc58a-47d2-4fb3-b27e-f6c0d54f26b6",
-        "name": "CableLabs Remote UI Discovery Server",
-        "url": "http://10.43.0.93:8080"
+        "name": "YouTube",
+        "url": "https://www.youtube.com/tv",
+        "icons": [{
+            "url": "images/youtube-128px.png",
+            "width": 128,
+            "height": 128
+        }, {
+            "url": "images/youtube-64px.png",
+            "width": 64,
+            "height": 64
+        }, {
+            "url": "images/youtube-32px.png",
+            "width": 32,
+            "height": 32
+        }]
     }, {
         "id": "252703FB-A447-4659-B4CD-E15BC57B7B43",
         "name": "CableLabs HTTP Discovery Server (GitHub)",
