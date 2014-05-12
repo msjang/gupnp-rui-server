@@ -32,8 +32,7 @@ class XMLBuilder {
     }
 
     public void open_tag(string tag, string? attributes = null) {
-        builder.append_c('<');
-        builder.append(tag);
+        builder.append_printf("<%s", tag);
         if (attributes != null) {
             builder.append_c(' ');
             builder.append(attributes);
@@ -42,15 +41,13 @@ class XMLBuilder {
     }
 
     public void close_tag(string tag) {
-        builder.append("</");
-        builder.append(tag);
-        builder.append_c('>');
+        builder.append_printf("</%s>", tag);
     }
 
     public void append_node(string tag, string content,
             string? attributes = null) {
-        open_tag(tag);
-        builder.append(content);
+        open_tag(tag, attributes);
+        builder.append(Markup.escape_text(content));
         close_tag(tag);
     }
 
