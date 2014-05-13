@@ -39,6 +39,6 @@ While developing, it can be useful to leave `tup` running in the background, aut
 
 ## Run
 
-    ./server -c config/config.json
+    ./src/server -c config/config.json
 
 You should now be able to discover the server with your client.
