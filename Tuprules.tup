@@ -4,4 +4,4 @@ VALA_FLAGS += --vapidir=$(TUP_CWD)/vapi --pkg=gupnp-1.0 --pkg=gee-0.8 --pkg=gio-
 
 .gitignore
 
-!vala = |> valac -c %f $(VALA_FLAGS) |>
+!vala = |> valac %f $(VALA_FLAGS) -o %o |>
