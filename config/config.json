@@ -20,27 +20,7 @@
         }]
     }, {
         "id": "252703FB-A447-4659-B4CD-E15BC57B7B43",
-        "name": "CableLabs HTTP Discovery Server (GitHub)",
-        "url": "https://github.com/cablelabs/rui-http-server",
-        "icons": [{
-            "url": "https://github.global.ssl.fastly.net/images/modules/logos_page/GitHub-Mark.png"
-        }]
-    }, {
-        "id": "64D5C5A0-8CB1-476F-976D-9038C27A7EFE",
-        "name": "CableLabs RemoteUI Server Service (GitHub)",
-        "url": "https://github.com/cablelabs/gupnp-rui-server",
-        "icons": [{
-            "width": 120,
-            "height": 120,
-            "url": "images/GitHub-Mark-120px-plus.png"
-        }, {
-            "width": 64,
-            "height": 64,
-            "url": "images/GitHub-Mark-64px.png"
-        }, {
-            "width": 32,
-            "height": 32,
-            "url": "images/GitHub-Mark-32px.png"
-        }]
+        "name": "Sinkhole by Shaun Inman (Game)",
+        "url": "http://shauninman.com/ludumdare/alone/sinkhole/"
     }]
 }
