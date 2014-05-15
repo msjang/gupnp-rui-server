@@ -23,3 +23,7 @@ There is also a `clean.sh` script if you need it for some reason, but usually tu
     ./src/server -c config/config.json
 
 You should now be able to discover the server with your client.
+
+On Fedora, you may need to disable the firewall:
+
+    sudo systemctl stop firewalld
