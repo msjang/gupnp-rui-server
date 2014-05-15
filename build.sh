@@ -51,4 +51,4 @@ fi
 $TUP upd
 
 echo "Done, now run:"
-echo "  ./src/browser -s static"
+echo "  ./src/server -c config/config.json"
