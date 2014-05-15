@@ -1,26 +1,6 @@
-## Dependencies
+# GUPnP RUI Server
 
-### Ubuntu 14.04
-
-    sudo apt-get install git valac libgupnp-dev libgee-0.8-dev libjson-glib-dev
-
-    # tup build tool
-    # see: http://gittup.org/tup/
-    sudo apt-add-repository 'deb http://ppa.launchpad.net/anatol/tup/ubuntu precise main'
-    sudo apt-get update
-    sudo apt-get install tup
-
-### Fedora 20
-
-    sudo yum install fuse-devel gupnp-devel libgee-devel vala
-
-    # setup Tup
-    git clone git://github.com/gittup/tup.git
-    cd tup
-    ./bootstrap.sh
-
-    sudo ln -s $PWD/tup /usr/local/bin/tup
-    cd ..
+This serves UPnP RemoteUIs listed in the given config file (see config/config.json for an example).
 
 ## Getting Source
 
@@ -29,13 +9,14 @@
 
 ## Build
 
-    tup init
-    tup upd
+    ./build.sh
 
 While developing, it can be useful to leave `tup` running in the background, autocompiling every time anything changes:
 
     tup monitor -a
     # stop with 'tup stop'
+
+There is also a `clean.sh` script if you need it for some reason, but usually tup will take care of that automatically.
 
 ## Run
 
