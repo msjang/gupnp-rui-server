@@ -3,7 +3,7 @@ TUP=tup
 TUP_CHECKOUT=deps/.tup-checkout
 
 FEDORA_PACKAGES="gcc vala gupnp-devel libgee-devel json-glib-devel fuse-devel"
-UBUNTU_PACKAGES="gcc valac libgupnp-dev libgee-0.8-dev libjson-glib-dev libfuse-dev"
+UBUNTU_PACKAGES="gcc valac libgupnp-1.0-dev libgee-0.8-dev libjson-glib-dev libfuse-dev"
 
 if [ -f /etc/fedora-release ]; then
     for package in $FEDORA_PACKAGES ; do
