@@ -27,7 +27,7 @@ errordomain RUIError {
     BAD_CONFIG
 }
 
-public class RemoteUIServer {
+public class RUI.RemoteUIServer {
     static const string REMOTE_UI_SERVICE_TYPE = "urn:schemas-upnp-org:service:RemoteUIServer:1";
 
     string root_device_xml;
@@ -92,9 +92,14 @@ public class RemoteUIServer {
                 }
                 builder.close_tag("iconList");
             }
-            builder.open_tag("protocol", "shortName=\"DLNA-HTML5-1.0\"");
-            builder.append_node("uri", ui.url);
-            builder.close_tag("protocol");
+            foreach (Protocol protocol in ui.protocols) {
+                builder.open_tag("protocol",
+                    "shortName=\"%s\"".printf(protocol.shortName));
+                foreach (string url in protocol.urls) {
+                    builder.append_node("uri", url);
+                }
+                builder.close_tag("protocol");
+            }
             builder.close_tag("ui");
         }
         builder.close_tag("uilist");

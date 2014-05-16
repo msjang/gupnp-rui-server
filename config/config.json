@@ -4,7 +4,12 @@
     "uis": [{
         "id": "767cc58a-47d2-4fb3-b27e-f6c0d54f26b6",
         "name": "YouTube",
-        "url": "https://www.youtube.com/tv",
+        "protocols": [{
+            "urls": [
+                "https://www.youtube.com/tv"
+            ],
+            "shortName": "DLNA-HTML5-1.0"
+        }],
         "icons": [{
             "url": "images/youtube-128px.png",
             "width": 128,
@@ -21,6 +26,11 @@
     }, {
         "id": "252703FB-A447-4659-B4CD-E15BC57B7B43",
         "name": "Sinkhole by Shaun Inman (Game)",
-        "url": "http://shauninman.com/ludumdare/alone/sinkhole/"
+        "protocols": [{
+            "urls": [
+                "http://shauninman.com/ludumdare/alone/sinkhole/"
+            ],
+            "shortName": "DLNA-HTML5-1.0"
+        }]
     }]
 }

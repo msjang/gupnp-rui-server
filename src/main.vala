@@ -35,10 +35,23 @@ static const OptionEntry[] options = {
     { null }
 };
 
-static int main(string[] args) {
+internal static bool check_required_members(string type, Json.Object obj,
+        string[] required_members) {
+    var missing_required = false;
+    foreach (string member in required_members) {
+        if (!obj.has_member(member)) {
+            stderr.printf("Ignoring %s with missing required attribute \"%s\".\n",
+                type, member);
+            missing_required = true;
+        }
+    }
+    return !missing_required;
+}
+
+internal static int main(string[] args) {
     string? root_device_xml;
     string? service_directory;
-    RemoteUI[] remoteUIs = {};
+    RUI.RemoteUI[] remoteUIs = {};
     try {
         var opt_context = new OptionContext("UPnP RemoteUIServer");
         opt_context.set_help_enabled (true);
@@ -81,38 +94,57 @@ static int main(string[] args) {
                 stderr.printf("Ignoring non-object member of uis array.\n");
                 continue;
             }
-            string[] required_members = {"id", "name", "url"};
-            var missing_required = false;
-            foreach (string member in required_members) {
-                if (!ui_node.has_member(member)) {
-                    stderr.printf("Ignoring UI with missing required attribute \"%s\".\n",
-                        member);
-                    missing_required = true;
-                    break;
-                }
-            }
-            if (missing_required) {
+            string[] required_members = {"id", "name", "protocols"};
+            if (!check_required_members("UI", ui_node, required_members)) {
                 continue;
             }
-            var id = ui_node.get_string_member("id");
-            var name = ui_node.get_string_member("name");
-            var url = ui_node.get_string_member("url");
-            string? description = null;
+            RUI.RemoteUI remoteUI = RUI.RemoteUI() {
+                id = ui_node.get_string_member("id"),
+                name = ui_node.get_string_member("name")
+            };
             if (ui_node.has_member("description")) {
-                description = ui_node.get_string_member("description");
+                remoteUI.description = ui_node.get_string_member("description");
             }
-            Icon[]? icons = null;
+            RUI.Protocol[] protocols = {};
+            Json.Array protocols_node = ui_node.get_array_member("protocols");
+            for (var j = 0; j < protocols_node.get_length(); ++j) {
+                Json.Object protocol_node = protocols_node.get_element(j).get_object();
+                required_members = {"urls", "shortName"};
+                if (!check_required_members("protocol", protocol_node, required_members)) {
+                    continue;
+                }
+                RUI.Protocol protocol = RUI.Protocol() {
+                    shortName = protocol_node.get_string_member("shortName")
+                };
+                string[] urls = {};
+                Json.Array urls_node = protocol_node.get_array_member("urls");
+                for (var k = 0; k < urls_node.get_length(); ++k) {
+                    urls += urls_node.get_element(k).get_string();
+                }
+                if (urls.length == 0) {
+                    stderr.printf("Ignoring invalid protocols attribute with no urls.\n");
+                    continue;
+                }
+                protocol.urls = urls;
+                protocols += protocol;
+            }
+            if (protocols.length == 0) {
+                stderr.printf("Ignoring invalid RemoteUI with 0-length protocol list.\n");
+                continue;
+            }
+            remoteUI.protocols = protocols;
             if (ui_node.has_member("icons")) {
-                icons = {};
+                RUI.Icon[] icons = {};
                 Json.Array icons_node = ui_node.get_array_member("icons");
                 for (var j = 0; j < icons_node.get_length(); ++j) {
                     Json.Object icon_node = icons_node.get_element(j).get_object();
-                    if (!icon_node.has_member("url")) {
-                        stderr.printf("Ignoring icon with missing require attribute \"url\" for UI %s.\n", name);
+                    required_members = {"url"};
+                    if (!check_required_members("icon", icon_node, required_members)) {
                         continue;
                     }
-                    Icon icon = {};
-                    icon.url = icon_node.get_string_member("url");
+                    RUI.Icon icon = RUI.Icon() {
+                        url = icon_node.get_string_member("url")
+                    };
                     if (icon_node.has_member("width")) {
                         var width = icon_node.get_int_member("width");
                         if (width > 0) {
@@ -135,18 +167,20 @@ static int main(string[] args) {
                 }
                 if (icons.length == 0) {
                     stderr.printf("Ignoring invalid 0-length icons list for UI %s.\n",
-                        name);
-                    icons = null;
+                        remoteUI.name);
+                    remoteUI.icons = null;
+                } else {
+                    remoteUI.icons = icons;
                 }
             }
-            remoteUIs += RemoteUI(id, name, description, url, icons);
+            remoteUIs += remoteUI;
         }
     } catch (Error e) {
         stderr.printf("Error reading config file %s.\n", config_file);
         return 3;
     }
     try {
-        RemoteUIServer server = new RemoteUIServer(root_device_xml,
+        RUI.RemoteUIServer server = new RUI.RemoteUIServer(root_device_xml,
             service_directory, remoteUIs);
         server.start();
         return 0;

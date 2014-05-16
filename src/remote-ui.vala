@@ -23,24 +23,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-public struct Icon {
+public struct RUI.Icon {
     uint64? width;
     uint64? height;
     string url;
 }
 
-public struct RemoteUI {
-    public RemoteUI(string id, string name, string? description, string url,
-            Icon[]? icons) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.url = url;
-        this.icons = icons;
-    }
+public struct RUI.Protocol {
+    string[] urls;
+    string shortName;
+}
+
+public struct RUI.RemoteUI {
     string id;
     string name;
     string? description;
-    string url;
+
+    Protocol[] protocols;
     Icon[]? icons;
 }
