@@ -1,9 +1,31 @@
-internal class RUI.ConfigFileReader {
+public class RUI.ConfigFileReader {
     public string root_device_xml { get; private set; }
     public string service_directory { get; private set; }
     public RemoteUI[] remoteUIs { get; private set; }
 
-    public void parse_config_file(string config_file) throws Error {
+    private string config_file;
+    private FileMonitor? file_monitor = null;
+
+    public signal void remote_uis_changed();
+
+    public ConfigFileReader(string config_file) {
+        this.config_file = config_file;
+    }
+
+    private bool check_required_members(string type, Json.Object obj,
+            string[] required_members) {
+        var missing_required = false;
+        foreach (string member in required_members) {
+            if (!obj.has_member(member)) {
+                stderr.printf("Ignoring %s with missing required attribute \"%s\".\n",
+                    type, member);
+                missing_required = true;
+            }
+        }
+        return !missing_required;
+    }
+
+    public void parse_config_file() throws Error {
         var parser = new Json.Parser();
         parser.load_from_file(config_file);
 
@@ -12,14 +34,12 @@ internal class RUI.ConfigFileReader {
         if (object == null) {
             throw new RUIError.BAD_CONFIG("Config file has no root object.\n");
         }
+        string[] required_members = {"root-device-xml", "service-directory"};
+        if (!check_required_members("config file", object, required_members)) {
+            throw new RUIError.BAD_CONFIG("Missing \"root-device-xml\" or \"service-directory\"");
+        }
         root_device_xml = object.get_string_member("root-device-xml");
-        if (root_device_xml == null) {
-            throw new RUIError.BAD_CONFIG("Missing \"root-device-xml\"");
-        }
         service_directory = object.get_string_member("service-directory");
-        if (service_directory == null) {
-            throw new RUIError.BAD_CONFIG("Missing \"service-directory\"");
-        }
         if (!Path.is_absolute(service_directory)) {
             service_directory = Path.build_filename(Path.get_dirname(config_file), service_directory);
         }
@@ -31,7 +51,7 @@ internal class RUI.ConfigFileReader {
                 stderr.printf("Ignoring non-object member of uis array.\n");
                 continue;
             }
-            string[] required_members = {"id", "name", "protocols"};
+            required_members = {"id", "name", "protocols"};
             if (!check_required_members("UI", ui_node, required_members)) {
                 continue;
             }
@@ -113,5 +133,31 @@ internal class RUI.ConfigFileReader {
             remoteUIs += remoteUI;
         }
         this.remoteUIs = remoteUIs;
+        remote_uis_changed();
+    }
+
+    public void watch_config_file() throws Error {
+        if (file_monitor != null) {
+            file_monitor.cancel();
+        }
+        var file = File.new_for_path(config_file);
+        stdout.printf("Watching %s\n", file.get_path());
+        file_monitor = file.monitor(FileMonitorFlags.NONE);
+        file_monitor.changed.connect(on_config_file_changed);
+        parse_config_file();
+    }
+
+    private void on_config_file_changed(File file, File? other_file,
+            FileMonitorEvent event) {
+        if (event != FileMonitorEvent.CHANGED && event != FileMonitorEvent.CREATED) {
+            return;
+        }
+        try {
+            parse_config_file();
+        } catch (Error e) {
+            stderr.printf(
+                "Error parsing changed config file: %s. Continuing to use the old config file.\n",
+                e.message);
+        }
     }
 }

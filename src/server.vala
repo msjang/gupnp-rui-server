@@ -37,11 +37,15 @@ public class RUI.RemoteUIServer {
     GUPnP.RootDevice root_device;
     RemoteUI[] remoteUIs;
 
-    public RemoteUIServer(string root_device_xml, string service_directory,
-        RemoteUI[] remoteUIs) {
-        this.root_device_xml = root_device_xml;
-        this.service_directory = service_directory;
-        this.remoteUIs = remoteUIs;
+    public RemoteUIServer(ConfigFileReader config) {
+        this.root_device_xml = config.root_device_xml;
+        this.service_directory = config.service_directory;
+        this.remoteUIs = config.remoteUIs;
+        config.remote_uis_changed.connect(on_remote_uis_changed);
+    }
+
+    private void on_remote_uis_changed(ConfigFileReader config) {
+        this.remoteUIs = config.remoteUIs;
     }
 
     public void start() throws Error {

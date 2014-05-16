@@ -35,19 +35,6 @@ static const OptionEntry[] options = {
     { null }
 };
 
-internal static bool check_required_members(string type, Json.Object obj,
-        string[] required_members) {
-    var missing_required = false;
-    foreach (string member in required_members) {
-        if (!obj.has_member(member)) {
-            stderr.printf("Ignoring %s with missing required attribute \"%s\".\n",
-                type, member);
-            missing_required = true;
-        }
-    }
-    return !missing_required;
-}
-
 internal static int main(string[] args) {
     try {
         var opt_context = new OptionContext("UPnP RemoteUIServer");
@@ -65,15 +52,15 @@ internal static int main(string[] args) {
     }
     RUI.ConfigFileReader config;
     try {
-        config = new RUI.ConfigFileReader();
-        config.parse_config_file(config_file);
+        config = new RUI.ConfigFileReader(config_file);
+        config.watch_config_file();
     } catch (Error e) {
-        stderr.printf("Error reading config file %s.\n", config_file);
+        stderr.printf("Error reading config file %s: %s\n", config_file,
+            e.message);
         return 3;
     }
     try {
-        RUI.RemoteUIServer server = new RUI.RemoteUIServer(
-            config.root_device_xml, config.service_directory,config.remoteUIs);
+        RUI.RemoteUIServer server = new RUI.RemoteUIServer(config);
         server.start();
         return 0;
     } catch (Error e) {
