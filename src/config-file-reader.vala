@@ -1,12 +1,18 @@
 public class RUI.ConfigFileReader {
     public string root_device_xml { get; private set; }
     public string service_directory { get; private set; }
-    public RemoteUI[] remoteUIs { get; private set; }
+    public Gee.Collection<RemoteUI?> remoteUIs {
+        owned get {
+            return _remoteUIs.values;
+        }
+    }
 
     private string config_file;
     private FileMonitor? file_monitor = null;
+    private Gee.Map<string, RemoteUI?> _remoteUIs =
+        new Gee.HashMap<string, RemoteUI?>();
 
-    public signal void remote_uis_changed();
+    public signal void remote_uis_changed(string[] changed_uis);
 
     public ConfigFileReader(string config_file) {
         this.config_file = config_file;
@@ -44,7 +50,7 @@ public class RUI.ConfigFileReader {
             service_directory = Path.build_filename(Path.get_dirname(config_file), service_directory);
         }
         var uis = object.get_array_member("uis");
-        RemoteUI[] remoteUIs = {};
+        var remoteUIs = new Gee.HashMap<string, RemoteUI?>();
         for (var i = 0; i < uis.get_length(); ++i) {
             var ui_node = uis.get_element(i).get_object();
             if (ui_node == null) {
@@ -59,6 +65,11 @@ public class RUI.ConfigFileReader {
                 id = ui_node.get_string_member("id"),
                 name = ui_node.get_string_member("name")
             };
+            if (remoteUIs.has_key(remoteUI.id)) {
+                stderr.printf("Ignoring duplicate RemoteUI id: %s\n",
+                    remoteUI.id);
+                continue;
+            }
             if (ui_node.has_member("description")) {
                 remoteUI.description = ui_node.get_string_member("description");
             }
@@ -130,10 +141,21 @@ public class RUI.ConfigFileReader {
                     remoteUI.icons = icons;
                 }
             }
-            remoteUIs += remoteUI;
+            remoteUIs.set(remoteUI.id, remoteUI);
         }
-        this.remoteUIs = remoteUIs;
-        remote_uis_changed();
+        string[] changed_uis = {};
+        foreach (var ui in this.remoteUIs) {
+            if (!remoteUIs.has(ui.id, ui)) {
+                changed_uis += ui.id;
+            }
+        }
+        foreach (var id in remoteUIs.keys) {
+            if (!this._remoteUIs.has_key(id)) {
+                changed_uis += id;
+            }
+        }
+        this._remoteUIs = remoteUIs;
+        remote_uis_changed(changed_uis);
     }
 
     public void watch_config_file() throws Error {

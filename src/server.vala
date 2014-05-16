@@ -35,7 +35,8 @@ public class RUI.RemoteUIServer {
 
     GUPnP.Context context;
     GUPnP.RootDevice root_device;
-    RemoteUI[] remoteUIs;
+    GUPnP.Service service;
+    Gee.Collection<RemoteUI?> remoteUIs;
 
     public RemoteUIServer(ConfigFileReader config) {
         this.root_device_xml = config.root_device_xml;
@@ -44,8 +45,14 @@ public class RUI.RemoteUIServer {
         config.remote_uis_changed.connect(on_remote_uis_changed);
     }
 
-    private void on_remote_uis_changed(ConfigFileReader config) {
+    private void on_remote_uis_changed(ConfigFileReader config,
+            string[] changed_uis) {
         this.remoteUIs = config.remoteUIs;
+        XMLBuilder builder = new XMLBuilder();
+        foreach (var id in changed_uis) {
+            builder.append_node("uiID", id);
+        }
+        service.notify_value("UIListingUpdate", builder.to_string());
     }
 
     public void start() throws Error {
@@ -55,7 +62,7 @@ public class RUI.RemoteUIServer {
         root_device.set_available(true);
         stdout.printf("Running UPnP service on http://%s:%u/%s\n", context.host_ip, context.port, root_device.description_path);
 
-        var service = (GUPnP.Service)root_device.get_service(REMOTE_UI_SERVICE_TYPE);
+        service = (GUPnP.Service)root_device.get_service(REMOTE_UI_SERVICE_TYPE);
         if (service == null) {
             throw new RUIError.BAD_CONFIG(
                 "Unable to get %s.".printf(REMOTE_UI_SERVICE_TYPE));
