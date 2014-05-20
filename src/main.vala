@@ -25,6 +25,7 @@
  */
 static string? config_file = null;
 static bool debug = false;
+static bool watch = false;
 
 static const OptionEntry[] options = {
     { "config-file", 'c', 0, OptionArg.FILENAME, ref config_file,
@@ -32,6 +33,8 @@ static const OptionEntry[] options = {
         "[file]" },
     { "debug", 'd', 0, OptionArg.NONE, ref debug,
         "Print debug messages to the console", null },
+    { "watch", 'w', 0, OptionArg.NONE, ref watch,
+        "Watch the config file and send UIListingUpdate events", null },
     { null }
 };
 
@@ -58,7 +61,10 @@ internal static int main(string[] args) {
     RUI.ConfigFileReader config;
     try {
         config = new RUI.ConfigFileReader(config_file);
-        config.watch_config_file();
+        config.parse_config_file();
+        if (watch) {
+            config.watch_config_file();
+        }
     } catch (Error e) {
         stderr.printf("Error reading config file %s: %s\n", config_file,
             e.message);

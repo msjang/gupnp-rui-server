@@ -166,7 +166,6 @@ public class RUI.ConfigFileReader {
         stdout.printf("Watching %s\n", file.get_path());
         file_monitor = file.monitor(FileMonitorFlags.NONE);
         file_monitor.changed.connect(on_config_file_changed);
-        parse_config_file();
     }
 
     private void on_config_file_changed(File file, File? other_file,

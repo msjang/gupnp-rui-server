@@ -22,7 +22,7 @@ There is also a `clean.sh` script if you need it for some reason, but usually tu
 
     ./src/server -c config/config.json
 
-You should now be able to discover the server with your client.
+You should now be able to discover the server with your client. Adding `-w` will make the server watch the config file for changes and send UIListingUpdate events when the RUI list changes. You can use `--help` to list all options.
 
 On Fedora, you may need to disable the firewall:
 
