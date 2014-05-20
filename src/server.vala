@@ -68,13 +68,6 @@ public class RUI.RemoteUIServer {
                 "Unable to get %s.".printf(REMOTE_UI_SERVICE_TYPE));
         }
         service.action_invoked["GetCompatibleUIs"].connect(on_get_compatible_uis);
-        
-        MainLoop loop = new MainLoop();
-        Unix.signal_add(Posix.SIGINT, () => {
-            loop.quit();
-            return true;
-        });
-        loop.run();
         root_device.set_available(false);
     }
     

@@ -35,6 +35,11 @@ static const OptionEntry[] options = {
     { null }
 };
 
+static MainLoop loop;
+static void safe_exit(int signal) {
+    loop.quit();
+}
+
 internal static int main(string[] args) {
     try {
         var opt_context = new OptionContext("UPnP RemoteUIServer");
@@ -62,6 +67,12 @@ internal static int main(string[] args) {
     try {
         RUI.RemoteUIServer server = new RUI.RemoteUIServer(config);
         server.start();
+
+        loop = new MainLoop();
+        Posix.signal(Posix.SIGINT, safe_exit);
+        Posix.signal(Posix.SIGHUP, safe_exit);
+        Posix.signal(Posix.SIGTERM, safe_exit);
+        loop.run();
         return 0;
     } catch (Error e) {
         stderr.printf("Error running RemoteUIServer: %s\n", e.message);
