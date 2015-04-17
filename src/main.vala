@@ -24,6 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 static string? config_file = null;
+static string? iface = null;
 static bool debug = false;
 static bool watch = false;
 
@@ -31,6 +32,8 @@ static const OptionEntry[] options = {
     { "config-file", 'c', 0, OptionArg.FILENAME, ref config_file,
         "The server config file. See config/config.json for an example.",
         "[file]" },
+    { "iface", 'i', 0, OptionArg.STRING, ref iface,
+        "Network interface for RUI service", null },
     { "debug", 'd', 0, OptionArg.NONE, ref debug,
         "Print debug messages to the console", null },
     { "watch", 'w', 0, OptionArg.NONE, ref watch,
@@ -52,6 +55,10 @@ internal static int main(string[] args) {
         if (config_file == null) {
             throw new OptionError.BAD_VALUE("Missing --config-file");
         }
+        if (iface == null) {
+            throw new OptionError.BAD_VALUE("Missing --iface");
+        }
+        stdout.printf ("iface:%s\n", iface);
     } catch (OptionError e) {
         stderr.printf ("%s\n", e.message);
         stderr.printf ("Run '%s --help' to see a full list of available command line options.\n",
@@ -72,7 +79,7 @@ internal static int main(string[] args) {
     }
     try {
         RUI.RemoteUIServer server = new RUI.RemoteUIServer(config);
-        server.start();
+        server.start(iface);
 
         loop = new MainLoop();
         Posix.signal(Posix.SIGINT, safe_exit);

@@ -55,8 +55,9 @@ public class RUI.RemoteUIServer {
         service.notify_value("UIListingUpdate", builder.to_string());
     }
 
-    public void start() throws Error {
-        context = new GUPnP.Context(null, null, 0);
+    public void start(string? iface) throws Error {
+        stdout.printf("RUI.RemoteUIServer.start(iface) called\n");
+        context = new GUPnP.Context(null, iface, 0);
         root_device = new GUPnP.RootDevice(context, root_device_xml,
             service_directory);
         root_device.set_available(true);
@@ -69,7 +70,7 @@ public class RUI.RemoteUIServer {
         }
         service.action_invoked["GetCompatibleUIs"].connect(on_get_compatible_uis);
     }
-    
+
     void on_get_compatible_uis(GUPnP.ServiceAction action) {
         XMLBuilder builder = new XMLBuilder();
         builder.open_tag("uilist");

@@ -20,7 +20,7 @@ There is also a `clean.sh` script if you need it for some reason, but usually tu
 
 ## Run
 
-    ./src/server -c config/config.json
+    ./src/server -c config/config.json -i eth0
 
 You should now be able to discover the server with your client. Adding `-w` will make the server watch the config file for changes and send UIListingUpdate events when the RUI list changes. You can use `--help` to list all options.
 
