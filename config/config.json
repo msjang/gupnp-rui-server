@@ -32,5 +32,14 @@
             ],
             "shortName": "DLNA-HTML5-1.0"
         }]
+    }, {
+        "id": "252703FB-A447-4659-B4CD-E15BC77B7B48",
+        "name": "Local UI Server",
+        "protocols": [{
+            "urls": [
+                "http://%IP%/local_ui_server"
+            ],
+            "shortName": "DLNA-HTML5-1.0"
+        }]
     }]
 }

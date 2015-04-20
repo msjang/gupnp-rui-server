@@ -100,6 +100,7 @@ public class RUI.RemoteUIServer {
                 builder.open_tag("protocol",
                     "shortName=\"%s\"".printf(protocol.shortName));
                 foreach (string url in protocol.urls) {
+                    url = url.replace ("%IP%", context.host_ip);
                     builder.append_node("uri", url);
                 }
                 builder.close_tag("protocol");
